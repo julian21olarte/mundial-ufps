@@ -25,7 +25,7 @@ public abstract class AbstractDAO<T, PK> {
     public AbstractDAO(Class<T> persistentClass){ 
         //this.persistentClass =(Class) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
         this.persistentClass = persistentClass;
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("conjuntoResidencial");
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("mundial");
         EntityManager em = emf.createEntityManager();
         this.entityManager = em;
     }
@@ -59,15 +59,14 @@ public abstract class AbstractDAO<T, PK> {
  
     public void save(T entity) {
         this.getEntityManager().getTransaction().begin();
-        this.getEntityManager().merge(entity);
+        this.getEntityManager().persist(entity);
         this.getEntityManager().getTransaction().commit();
     }
     
     public T update( T entity ){
-        /*this.getEntityManager().getTransaction().begin();
+        this.getEntityManager().getTransaction().begin();
         this.getEntityManager().merge(entity);
-        this.getEntityManager().getTransaction().commit();*/
-        this.save(entity);
+        this.getEntityManager().getTransaction().commit();
         return entity;
    }
  

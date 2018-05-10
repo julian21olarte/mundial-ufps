@@ -5,8 +5,10 @@
  */
 package com.ufps.mundial.controller;
 
+import com.ufps.mundial.dao.equipoDAO.EquipoDAOImpl;
+import com.ufps.mundial.model.Equipo;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,33 +22,10 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "EquipoController", urlPatterns = {"/Equipo"})
 public class EquipoController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet EquipoController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet EquipoController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    private final EquipoDAOImpl equipoImpl = new EquipoDAOImpl();
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+
+   
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -58,7 +37,11 @@ public class EquipoController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String param = request.getParameter("action");
+        if(param != null && param.equals("delete")) {
+            this.deleteTeam(Integer.parseInt(request.getParameter("id")));
+        }
+        this.showTeams(request, response);
     }
 
     /**
@@ -72,17 +55,59 @@ public class EquipoController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String param = request.getParameter("action");
+        if(param != null && param.equals("save")) {
+            this.insertTeam(request);
+        }
+        else if(param != null && param.equals("update")) {
+            this.updateTeam(request);
+        }
+        this.showTeams(request, response);
+    }
+
+    
+    /**
+     * Show All teams
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException 
+     */
+    private void showTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        List<Equipo> equipos = this.equipoImpl.findAll();
+        request.setAttribute("equipos", equipos);
+        request.getRequestDispatcher("/equipo.jsp").forward(request, response);
+    }
+    
+    /**
+     * insert a new Team
+     * @param request 
+     */
+    private void insertTeam(HttpServletRequest request) {
+        Equipo equipo = new Equipo();
+        equipo.setNombre(request.getParameter("nombre"));
+        equipo.setPresidente(request.getParameter("presidente"));
+        this.equipoImpl.save(equipo);
     }
 
     /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
+     * Update a Team
+     * @param request 
      */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    private void updateTeam(HttpServletRequest request) {
+        Equipo equipo = new Equipo();
+        equipo.setId(Integer.parseInt(request.getParameter("id")));
+        equipo.setNombre(request.getParameter("nombre"));
+        equipo.setPresidente(request.getParameter("presidente"));
+        this.equipoImpl.update(equipo);
+    }
+
+    /**
+     * Delete a Team
+     * @param id 
+     */
+    private void deleteTeam(int id) {
+        this.equipoImpl.deleteById(id);
+    }
 
 }

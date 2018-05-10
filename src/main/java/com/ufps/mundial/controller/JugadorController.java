@@ -5,8 +5,15 @@
  */
 package com.ufps.mundial.controller;
 
+import com.ufps.mundial.dao.equipoDAO.EquipoDAOImpl;
+import com.ufps.mundial.dao.jugadorDAO.JugadorDAOImpl;
+import com.ufps.mundial.model.Jugador;
+import com.ufps.mundial.model.JugadorPK;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -20,33 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "JugadorController", urlPatterns = {"/Jugador"})
 public class JugadorController extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet JugadorController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet JugadorController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+   private final JugadorDAOImpl jugadorImpl = new JugadorDAOImpl();
+   private final EquipoDAOImpl equipoImpl = new EquipoDAOImpl();
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+   
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -58,7 +42,13 @@ public class JugadorController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String param = request.getParameter("action");
+        if(param != null && param.equals("delete")) {
+            int equipo = Integer.parseInt(request.getParameter("equipo"));
+            int numero = Integer.parseInt(request.getParameter("numero"));
+            this.deletePlayer(equipo, numero);
+        }
+        this.showPlayers(request, response);
     }
 
     /**
@@ -72,17 +62,72 @@ public class JugadorController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String param = request.getParameter("action");
+        try {
+            if(param != null && param.equals("save")) {
+                this.insertPlayer(request);
+            }
+            else if(param != null && param.equals("update")) {
+                this.updatePlayer(request);
+            }
+        } catch (ParseException ex) {
+            Logger.getLogger(JugadorController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        this.showPlayers(request, response);
+    }
+
+    
+    /**
+     * Show All players
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException 
+     */
+    private void showPlayers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setAttribute("jugadores", this.jugadorImpl.findAll());
+        request.setAttribute("equipos", this.equipoImpl.findAll());
+        request.getRequestDispatcher("/jugador.jsp").forward(request, response);
+    }
+    
+    /**
+     * insert a new Player
+     * @param request 
+     */
+    private void insertPlayer(HttpServletRequest request) throws ParseException {
+        int numero = Integer.parseInt(request.getParameter("numero"));
+        int equipo = Integer.parseInt(request.getParameter("equipo"));
+        Jugador jugador = new Jugador(new JugadorPK(equipo, numero));
+        
+        jugador.setNombre(request.getParameter("nombre"));
+        jugador.setEmail(request.getParameter("email"));
+        jugador.setPosicion(request.getParameter("posicion"));
+        jugador.setFechanacimiento(new SimpleDateFormat("yyyy-MM-dd").parse(request.getParameter("fecha")));
+        this.jugadorImpl.save(jugador);
     }
 
     /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
+     * Update a Player
+     * @param request 
      */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    private void updatePlayer(HttpServletRequest request) throws ParseException {
+        int numero = Integer.parseInt(request.getParameter("numero"));
+        int equipo = Integer.parseInt(request.getParameter("equipo"));
+        Jugador jugador = new Jugador(new JugadorPK(equipo, numero));
+        
+        jugador.setNombre(request.getParameter("nombre"));
+        jugador.setEmail(request.getParameter("email"));
+        jugador.setPosicion(request.getParameter("posicion"));
+        jugador.setFechanacimiento(new SimpleDateFormat("yyyy-MM-dd").parse(request.getParameter("fecha")));
+        this.jugadorImpl.update(jugador);
+    }
+
+    /**
+     * Delete a Player
+     * @param id 
+     */
+    private void deletePlayer(int equipo, int numero) {
+        this.jugadorImpl.deleteById(new JugadorPK(equipo, numero));
+    }
 
 }

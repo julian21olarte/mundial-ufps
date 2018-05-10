@@ -7,7 +7,6 @@ package com.ufps.mundial.dao.equipoDAO;
 
 import com.ufps.mundial.dao.AbstractDAO;
 import com.ufps.mundial.model.Equipo;
-import com.ufps.mundial.model.Jugador;
 import java.util.List;
 
 /**
@@ -17,7 +16,7 @@ import java.util.List;
 public class EquipoDAOImpl extends AbstractDAO implements EquipoDAO {
 
     public EquipoDAOImpl() {
-        super(Jugador.class);
+        super(Equipo.class);
     }
 
     @Override
