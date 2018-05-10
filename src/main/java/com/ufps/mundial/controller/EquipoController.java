@@ -76,6 +76,7 @@ public class EquipoController extends HttpServlet {
     private void showTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Equipo> equipos = this.equipoImpl.findAll();
         request.setAttribute("equipos", equipos);
+        request.setAttribute("controller", "Equipo");
         request.getRequestDispatcher("/equipo.jsp").forward(request, response);
     }
     

@@ -87,6 +87,7 @@ public class JugadorController extends HttpServlet {
     private void showPlayers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setAttribute("jugadores", this.jugadorImpl.findAll());
         request.setAttribute("equipos", this.equipoImpl.findAll());
+        request.setAttribute("controller", "Jugador");
         request.getRequestDispatcher("/jugador.jsp").forward(request, response);
     }
     
